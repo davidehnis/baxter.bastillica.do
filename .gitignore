@@ -3,3 +3,8 @@
 ################################################################################
 
 *.suo
+*.cache
+*.cache
+/Baxter/Baxter.Domain/obj/Debug
+/Baxter/Baxter.Text/obj/Debug
+/Baxter/packages/LumenWorksX.Framework.IO.1.0.1/src/obj

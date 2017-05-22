@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.6
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baxter.Domain", "Baxter.Domain\Baxter.Domain.csproj", "{C468FA93-160C-410D-8550-BD6302420747}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baxter.Text", "Baxter.Text\Baxter.Text.csproj", "{8512F36C-5ECD-4140-93CD-AE1D60A92DDA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C468FA93-160C-410D-8550-BD6302420747}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C468FA93-160C-410D-8550-BD6302420747}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C468FA93-160C-410D-8550-BD6302420747}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C468FA93-160C-410D-8550-BD6302420747}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8512F36C-5ECD-4140-93CD-AE1D60A92DDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8512F36C-5ECD-4140-93CD-AE1D60A92DDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8512F36C-5ECD-4140-93CD-AE1D60A92DDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8512F36C-5ECD-4140-93CD-AE1D60A92DDA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

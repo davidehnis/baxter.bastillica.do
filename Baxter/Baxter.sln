@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baxter.Text", "Baxter.Text\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baxter.Text.Tests", "Baxter.Text.Tests\Baxter.Text.Tests.csproj", "{EAEA0DFB-97A9-4BF5-BE9F-99A246753308}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baxter.Vector.Machine", "Baxter.Vector.Machine\Baxter.Vector.Machine.csproj", "{DC50CAED-F76C-4C54-8461-E3448F412CA5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{EAEA0DFB-97A9-4BF5-BE9F-99A246753308}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EAEA0DFB-97A9-4BF5-BE9F-99A246753308}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EAEA0DFB-97A9-4BF5-BE9F-99A246753308}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC50CAED-F76C-4C54-8461-E3448F412CA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC50CAED-F76C-4C54-8461-E3448F412CA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC50CAED-F76C-4C54-8461-E3448F412CA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC50CAED-F76C-4C54-8461-E3448F412CA5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

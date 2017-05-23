@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Baxter.Text
 {
-    public class TextClassificationProblemBuilder
+    internal class TextClassificationProblemBuilder
     {
         public svm_problem CreateProblem(IEnumerable<string> x, double[] y, IReadOnlyList<string> vocabulary)
         {

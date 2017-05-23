@@ -1,0 +1,5 @@
+C:\Users\dehnis\Dropbox\Src\VSGIT\Baxter\Baxter\Baxter.Vector.Machine\bin\Debug\Baxter.Vector.Machine.dll
+C:\Users\dehnis\Dropbox\Src\VSGIT\Baxter\Baxter\Baxter.Vector.Machine\bin\Debug\Baxter.Vector.Machine.pdb
+C:\Users\dehnis\Dropbox\Src\VSGIT\Baxter\Baxter\Baxter.Vector.Machine\obj\Debug\Baxter.Vector.Machine.csprojResolveAssemblyReference.cache
+C:\Users\dehnis\Dropbox\Src\VSGIT\Baxter\Baxter\Baxter.Vector.Machine\obj\Debug\Baxter.Vector.Machine.dll
+C:\Users\dehnis\Dropbox\Src\VSGIT\Baxter\Baxter\Baxter.Vector.Machine\obj\Debug\Baxter.Vector.Machine.pdb

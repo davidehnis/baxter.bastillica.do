@@ -93,9 +93,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="Data.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TextClassificationProblemBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

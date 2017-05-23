@@ -41,6 +41,36 @@
     <Reference Include="CsvReader, Version=0.9.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\CsvTools.1.0.12\lib\CsvReader.dll</HintPath>
     </Reference>
+    <Reference Include="IKVM.OpenJDK.Charsets, Version=7.2.4630.5, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.OpenJDK.Charsets.7.2.4630.5\lib\IKVM.OpenJDK.Charsets.dll</HintPath>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Core, Version=7.2.4630.5, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.OpenJDK.Core.7.2.4630.5\lib\IKVM.OpenJDK.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Security, Version=7.2.4630.5, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.OpenJDK.Security.7.2.4630.5\lib\IKVM.OpenJDK.Security.dll</HintPath>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.SwingAWT, Version=7.2.4630.5, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.OpenJDK.SwingAWT.7.2.4630.5\lib\IKVM.OpenJDK.SwingAWT.dll</HintPath>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Text, Version=7.2.4630.5, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.OpenJDK.Text.7.2.4630.5\lib\IKVM.OpenJDK.Text.dll</HintPath>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Util, Version=7.2.4630.5, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.OpenJDK.Util.7.2.4630.5\lib\IKVM.OpenJDK.Util.dll</HintPath>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.XML.API, Version=7.2.4630.5, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.OpenJDK.XML.API.7.2.4630.5\lib\IKVM.OpenJDK.XML.API.dll</HintPath>
+    </Reference>
+    <Reference Include="IKVM.Runtime, Version=7.2.4630.5, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.Runtime.7.2.4630.5\lib\IKVM.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="libsvm, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\libsvm.net.2.1.8\lib\libsvm.dll</HintPath>
+    </Reference>
+    <Reference Include="LIBSVM.NET, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\libsvm.net.2.1.8\lib\LIBSVM.NET.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\MSTest.TestFramework.1.1.11\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.dll</HintPath>
     </Reference>
@@ -59,10 +89,16 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Artifacts\classified - Copy.txt" />
-    <Content Include="Artifacts\classified.txt" />
+    <Content Include="Artifacts\sunnyData.txt" />
     <Content Include="Artifacts\document-term-matric.txt" />
     <Content Include="Artifacts\svm.txt" />
     <Content Include="Artifacts\vocabulary.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Baxter.Text\Baxter.Text.csproj">
+      <Project>{8512F36C-5ECD-4140-93CD-AE1D60A92DDA}</Project>
+      <Name>Baxter.Text</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

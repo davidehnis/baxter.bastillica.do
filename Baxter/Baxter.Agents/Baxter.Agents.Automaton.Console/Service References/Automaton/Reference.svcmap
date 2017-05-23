@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="79c1439c-7eae-4459-a448-33e40fcced2e" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://localhost:18230/Automaton.svc" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="Automaton.wsdl" MetadataType="Wsdl" ID="6410e0e8-9d3b-4575-9181-7e482104dec0" SourceId="1" SourceUrl="http://localhost:18230/Automaton.svc?wsdl" />
+    <MetadataFile FileName="Automaton.xsd" MetadataType="Schema" ID="b398b3bf-0920-475c-b006-55319884e16a" SourceId="1" SourceUrl="http://localhost:18230/Automaton.svc?xsd=xsd0" />
+    <MetadataFile FileName="Automaton.disco" MetadataType="Disco" ID="6c42df2b-07b5-4f6a-8449-f604bf42f63b" SourceId="1" SourceUrl="http://localhost:18230/Automaton.svc?disco" />
+    <MetadataFile FileName="Automaton1.xsd" MetadataType="Schema" ID="addd4d25-e988-4306-98fa-b2813194a8fe" SourceId="1" SourceUrl="http://localhost:18230/Automaton.svc?xsd=xsd1" />
+    <MetadataFile FileName="Automaton2.xsd" MetadataType="Schema" ID="a1575966-a957-4999-a566-4248ca042414" SourceId="1" SourceUrl="http://localhost:18230/Automaton.svc?xsd=xsd2" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

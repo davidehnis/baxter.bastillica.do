@@ -40,7 +40,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="Construct.cs" />
     <Compile Include="Hash.cs" />
     <Compile Include="Id.cs" />

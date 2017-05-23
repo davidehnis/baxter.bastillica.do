@@ -1,0 +1,12 @@
+C:\Users\david\Dropbox\VSGIT\Baxter.Queue\Tools\MDSServiceProxyGenerator\bin\Debug\MDSServiceProxyGenerator.exe
+C:\Users\david\Dropbox\VSGIT\Baxter.Queue\Tools\MDSServiceProxyGenerator\bin\Debug\MDSServiceProxyGenerator.pdb
+C:\Users\david\Dropbox\VSGIT\Baxter.Queue\Tools\MDSServiceProxyGenerator\bin\Debug\MDSCommonLib.dll
+C:\Users\david\Dropbox\VSGIT\Baxter.Queue\Tools\MDSServiceProxyGenerator\bin\Debug\log4net.dll
+C:\Users\david\Dropbox\VSGIT\Baxter.Queue\Tools\MDSServiceProxyGenerator\bin\Debug\MDSCommonLib.pdb
+C:\Users\david\Dropbox\VSGIT\Baxter.Queue\Tools\MDSServiceProxyGenerator\bin\Debug\log4net.xml
+C:\Users\david\Dropbox\VSGIT\Baxter.Queue\Tools\MDSServiceProxyGenerator\obj\Debug\MDSServiceProxyGenerator.csprojResolveAssemblyReference.cache
+C:\Users\david\Dropbox\VSGIT\Baxter.Queue\Tools\MDSServiceProxyGenerator\obj\Debug\MDS.Properties.Resources.resources
+C:\Users\david\Dropbox\VSGIT\Baxter.Queue\Tools\MDSServiceProxyGenerator\obj\Debug\MDS.Tools.ProxyGenerator.ProxyGeneratorForm.resources
+C:\Users\david\Dropbox\VSGIT\Baxter.Queue\Tools\MDSServiceProxyGenerator\obj\Debug\MDSServiceProxyGenerator.csproj.GenerateResource.Cache
+C:\Users\david\Dropbox\VSGIT\Baxter.Queue\Tools\MDSServiceProxyGenerator\obj\Debug\MDSServiceProxyGenerator.exe
+C:\Users\david\Dropbox\VSGIT\Baxter.Queue\Tools\MDSServiceProxyGenerator\obj\Debug\MDSServiceProxyGenerator.pdb

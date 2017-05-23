@@ -8,3 +8,6 @@
 /Baxter/Baxter.Domain/obj/Debug
 /Baxter/Baxter.Text/obj/Debug
 /Baxter/packages/LumenWorksX.Framework.IO.1.0.1/src/obj
+/Baxter/Baxter.Agents/Baxter.Agents.Automaton/obj/Debug
+/Baxter/Baxter.Agents/Baxter.Agents.Domain/Baxter.Agents.Domain/bin/Debug
+/Baxter/Baxter.Agents/Baxter.Agents.Domain/Baxter.Agents.Domain/obj/Debug

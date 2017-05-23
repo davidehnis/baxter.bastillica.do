@@ -1,0 +1,10 @@
+Text,IsSunny
+sunny,
+rainy,
+sunny sunny,
+sunny rainy,
+rainy sunny,
+rainy rainy,
+sunny sunny sunny,
+sunny rainy sunny,
+rainy rainy sunny,

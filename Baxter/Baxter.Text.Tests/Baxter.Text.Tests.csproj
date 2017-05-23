@@ -89,6 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Artifacts\classified - Copy.txt" />
+    <Content Include="Artifacts\letterData.txt" />
     <Content Include="Artifacts\sunnyData.txt" />
     <Content Include="Artifacts\document-term-matric.txt" />
     <Content Include="Artifacts\svm.txt" />

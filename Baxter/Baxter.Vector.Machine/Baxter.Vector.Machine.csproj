@@ -40,7 +40,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Kernel.cs" />
+    <Compile Include="KernelType.cs" />
     <Compile Include="Machine.cs" />
+    <Compile Include="Model.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="Parameter.cs" />
     <Compile Include="Problem.cs" />

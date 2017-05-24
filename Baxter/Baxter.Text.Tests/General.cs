@@ -39,7 +39,6 @@ namespace Baxter.Text.Tests
             // Act
             var vocabulary = x.SelectMany(GetWords).Distinct().OrderBy(word => word).ToList();
 
-
             // Assert
             Assert.IsTrue(vocabulary.Any());
         }
@@ -106,7 +105,7 @@ namespace Baxter.Text.Tests
             var newX = TextClassificationProblemBuilder.CreateNode(userInput, vocabulary);
 
             var predictedY = model.Predict(newX);
-            var answer = predictionDictionary[(int) predictedY];
+            var answer = predictionDictionary[(int)predictedY];
 
             // Assert
             Assert.AreEqual("Rainy", answer);

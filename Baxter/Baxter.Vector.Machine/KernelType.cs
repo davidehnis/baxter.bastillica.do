@@ -2,9 +2,9 @@
 {
     public enum KernelType
     {
-        LINEAR = 0,
-        POLY = 1,
-        RBF = 2,
-        SIGMOID = 3
+        Linear = 0,
+        Poly = 1,
+        Rbf = 2,
+        Sigmoid = 3
     }
 }

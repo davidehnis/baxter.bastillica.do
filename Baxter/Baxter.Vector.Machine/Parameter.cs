@@ -16,44 +16,84 @@ namespace Baxter.Vector.Machine
         public const int NuSvc = 1;
         public const int NuSvr = 4;
 
-        public int[] WeightLabel { get; }
+        public int[] WeightLabel { get; set; }
 
-        public int Probability { get; }
+        public int Probability { get; set; }
 
-        public int Shrinking { get; }
+        public int Shrinking { get; set; }
 
-        public double P { get; }
+        public double P { get; set; }
 
-        public double Nu { get; }
+        public double Nu { get; set; }
 
-        public double[] Weight { get; }
+        public double[] Weight { get; set; }
 
-        public int NrWeight { get; }
+        public int NrWeight { get; set; }
 
-        public double CacheSize { get; }
+        public double CacheSize { get; set; }
 
-        public double Eps { get; }
+        public double Eps { get; set; }
 
-        public double Coef0 { get; }
+        public double Coef0 { get; set; }
 
-        public double Gamma { get; }
+        public double Gamma { get; set; }
 
-        public int Degree { get; }
+        public int Degree { get; set; }
 
-        public int KernelType { get; }
+        public int KernelType { get; set; }
 
-        public int SvmType { get; }
+        public int SvmType { get; set; }
 
-        public double C { get; }
+        public double C { get; set; }
+
+        public void Copy(Parameter parameter)
+        {
+            WeightLabel = parameter.WeightLabel;
+            Probability = parameter.Probability;
+            Shrinking = parameter.Shrinking;
+            P = parameter.P;
+            Nu = parameter.Nu;
+            Weight = parameter.Weight;
+            NrWeight = parameter.NrWeight;
+            CacheSize = parameter.CacheSize;
+            Eps = parameter.Eps;
+            Coef0 = parameter.Coef0;
+            Gamma = parameter.Gamma;
+            Degree = parameter.Degree;
+            KernelType = parameter.KernelType;
+            SvmType = parameter.SvmType;
+            C = parameter.C;
+        }
+
+        // regression or one-class-svm
+        public bool IsRegression()
+        {
+            return SvmType == Parameter.OneClass ||
+                   SvmType == Parameter.Epsilon ||
+                   SvmType == Parameter.NuSvr;
+        }
+
+        // See use in Machine... Good probablity
+        public bool IsGoodProbability()
+        {
+            return Probability == 1 &&
+                   (SvmType == Parameter.Epsilon ||
+                    SvmType == Parameter.NuSvr);
+        }
+
+        public Parameter(Parameter parameter)
+        {
+            Copy(parameter);
+        }
 
         public Parameter()
         {
-            WeightLabel = new[] {0};
+            WeightLabel = new[] { 0 };
             Probability = 0;
             Shrinking = 0;
             P = 0;
             Nu = 0;
-            Weight = new [] {0.0};
+            Weight = new[] { 0.0 };
             NrWeight = 0;
             CacheSize = 0;
             Eps = 0;

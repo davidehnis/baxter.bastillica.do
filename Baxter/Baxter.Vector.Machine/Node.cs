@@ -16,8 +16,8 @@ namespace Baxter.Vector.Machine
             throw new NotImplementedException();
         }
 
-        public int Index { get; }
+        public int Index { get; set; }
 
-        public double Value { get; }
+        public double Value { get; set; }
     }
 }

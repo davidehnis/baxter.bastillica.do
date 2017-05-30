@@ -100,6 +100,10 @@
       <Project>{8512F36C-5ECD-4140-93CD-AE1D60A92DDA}</Project>
       <Name>Baxter.Text</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Baxter.Vector.Machine\Baxter.Vector.Machine.csproj">
+      <Project>{DC50CAED-F76C-4C54-8461-E3448F412CA5}</Project>
+      <Name>Baxter.Vector.Machine</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

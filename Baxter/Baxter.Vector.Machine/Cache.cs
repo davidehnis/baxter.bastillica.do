@@ -12,7 +12,7 @@ namespace Baxter.Vector.Machine
     // l is the number of total data items
     // size is the cache size limit in bytes
     //
-    internal class Cache
+    public class Cache
     {
         private int l;
         private long size;

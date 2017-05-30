@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Baxter.Vector.Machine
+﻿namespace Baxter.Vector.Machine
 {
     //
     // Kernel evaluation
@@ -15,9 +9,9 @@ namespace Baxter.Vector.Machine
     //
     public abstract class QMatrix
     {
-        public abstract float[] get_Q(int column, int len);
+        public double[] QD { get; protected set; }
 
-        public abstract double[] get_QD();
+        public abstract float[] get_Q(int column, int len);
 
         public abstract void swap_index(int i, int j);
     };

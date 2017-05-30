@@ -139,7 +139,7 @@ namespace Baxter.Vector.Machine
         {
             this.l = l;
             this.Q = Q;
-            QD = Q.get_QD();
+            QD = Q.QD;
             p = p_;
             y = y_;
             alpha = alpha_;

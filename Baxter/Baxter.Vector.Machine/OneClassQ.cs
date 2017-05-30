@@ -31,11 +31,6 @@ namespace Baxter.Vector.Machine
             return data[0];
         }
 
-        public override double[] get_QD()
-        {
-            return QD;
-        }
-
         public override void swap_index(int i, int j)
         {
             cache.swap_index(i, j);

@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Baxter.Vector.Machine;
 
 namespace Baxter.Text.Tests
 {
@@ -77,7 +78,7 @@ namespace Baxter.Text.Tests
 
             // Act
             const int C = 1;
-            var model = new C_SVC(problem, KernelHelper.LinearKernel(), C);
+            var model = new C_SVC(problem, libsvm.KernelHelper.LinearKernel(), C);
 
             // Assert
             Assert.IsNotNull(problem);
@@ -96,13 +97,41 @@ namespace Baxter.Text.Tests
             var problemBuilder = new TextClassificationProblemBuilder();
             var problem = problemBuilder.CreateProblem(x, y, vocabulary.ToList());
             const int C = 1;
-            var model = new C_SVC(problem, KernelHelper.LinearKernel(), C);
+            var model = new C_SVC(problem, libsvm.KernelHelper.LinearKernel(), C);
 
             // Act
             string userInput = "sunny sunny rainy rainy rainy";
             var predictionDictionary = new Dictionary<int, string> { { -1, "Rainy" }, { 1, "Sunny" } };
 
             var newX = TextClassificationProblemBuilder.CreateNode(userInput, vocabulary);
+
+            var predictedY = model.Predict(newX);
+            var answer = predictionDictionary[(int)predictedY];
+
+            // Assert
+            Assert.AreEqual("Rainy", answer);
+        }
+
+        [TestMethod]
+        public void DataReader007PredictsTextClassificationWithNewClasses()
+        {
+            // Arrange
+            const string path = @"..\..\Artifacts\sunnyData.txt";
+            var dataTable = DataTable.New.ReadCsv(path);
+            var x = dataTable.Rows.Select(row => row["Text"]).ToList();
+            var y = dataTable.Rows.Select(row => double.Parse(row["IsSunny"]))
+                .ToArray();
+            var vocabulary = x.SelectMany(GetWords).Distinct().OrderBy(word => word).ToList();
+            var problemBuilder = new TextClassificationBuilder();
+            var problem = problemBuilder.CreateProblem(x, y, vocabulary.ToList());
+            const int C = 1;
+            var model = new Classifier(problem, Vector.Machine.KernelHelper.LinearKernel(), C);
+
+            // Act
+            string userInput = "sunny sunny rainy rainy rainy";
+            var predictionDictionary = new Dictionary<int, string> { { -1, "Rainy" }, { 1, "Sunny" } };
+
+            var newX = TextClassificationBuilder.CreateNode(userInput, vocabulary);
 
             var predictedY = model.Predict(newX);
             var answer = predictionDictionary[(int)predictedY];

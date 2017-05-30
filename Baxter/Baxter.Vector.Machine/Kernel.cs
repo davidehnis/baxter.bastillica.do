@@ -2,7 +2,7 @@
 
 namespace Baxter.Vector.Machine
 {
-    public abstract class Kernel : QMatrix
+    public class Kernel : QMatrix
     {
         public Kernel(KernelType kernelType, double gamma, double r, int degree)
         {
@@ -30,7 +30,11 @@ namespace Baxter.Vector.Machine
             else X_Square = null;
         }
 
+        protected byte[] Y { get; set; }
+
         private Node[][] X { get; set; }
+
+        public Cache Cache { get; protected set; }
 
         private double Coef0 { get; set; }
 
@@ -102,14 +106,16 @@ namespace Baxter.Vector.Machine
             }
         }
 
-        public override float[] get_Q(int column, int len)
+        public override float[] get_Q(int i, int len)
         {
-            throw new NotImplementedException();
-        }
-
-        public override double[] get_QD()
-        {
-            throw new NotImplementedException();
+            float[][] data = new float[1][];
+            int start, j;
+            if ((start = Cache.get_data(i, data, len)) < len)
+            {
+                for (j = start; j < len; j++)
+                    data[0][j] = (float)(Y[i] * Y[j] * kernel_function(i, j));
+            }
+            return data[0];
         }
 
         public override void swap_index(int i, int j)

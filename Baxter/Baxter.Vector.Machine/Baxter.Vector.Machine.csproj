@@ -46,6 +46,7 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="InvalidFeatureException.cs" />
     <Compile Include="Kernel.cs" />
+    <Compile Include="KernelHelper.cs" />
     <Compile Include="KernelType.cs" />
     <Compile Include="Machine.cs" />
     <Compile Include="Model.cs" />

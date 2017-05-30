@@ -95,10 +95,17 @@
   <ItemGroup>
     <Compile Include="Data.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TextClassificationBuilder.cs" />
     <Compile Include="TextClassificationProblemBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Baxter.Vector.Machine\Baxter.Vector.Machine.csproj">
+      <Project>{dc50caed-f76c-4c54-8461-e3448f412ca5}</Project>
+      <Name>Baxter.Vector.Machine</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Accord.3.5.0\build\Accord.targets" Condition="Exists('..\packages\Accord.3.5.0\build\Accord.targets')" />

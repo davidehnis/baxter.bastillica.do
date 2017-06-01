@@ -12,6 +12,76 @@ namespace Baxter.Text.Tests
     public class GeneralTests
     {
         [TestMethod]
+        public void CompareKernelsVerifyEquality()
+        {
+            // Arrange
+            const string path = @"..\..\Artifacts\sunnyData.txt";
+            const string userInput = "sunny sunny rainy rainy rainy";
+
+            // Act
+            var baxter = Vector.Machine.KernelHelper.LinearKernel();
+            var svm = libsvm.KernelHelper.LinearKernel();
+
+            // Assert
+            Assert.AreEqual(svm.Degree, baxter.Degree);
+            Assert.AreEqual(svm.Gamma, baxter.Gamma);
+            Assert.AreEqual(svm.KernelType, baxter.KernelType);
+            Assert.AreEqual(svm.R, baxter.R);
+        }
+
+        [TestMethod]
+        public void CompareModelsVerifyEquality()
+        {
+            // Arrange
+            const string path = @"..\..\Artifacts\sunnyData.txt";
+
+            // Act
+            var baxter = BuildBaxterModel(path);
+            var svm = BuildSvmModel(path);
+
+            // Assert
+            Assert.AreEqual(svm.l, baxter.L);
+            Assert.AreEqual(svm.nr_class, baxter.NrClass);
+        }
+
+        [TestMethod]
+        public void ComparePredictionsVerifyEquality()
+        {
+            // Arrange
+            const string path = @"..\..\Artifacts\sunnyData.txt";
+            const string userInput = "sunny sunny rainy rainy rainy";
+
+            // Act
+            var baxter = BaxterPrediction(path, userInput);
+            var svm = SvmPrediction(path, userInput);
+
+            // Assert
+            Assert.AreEqual(svm, baxter);
+        }
+
+        [TestMethod]
+        public void CompareTextClassifiersProblemsVerifyEquality()
+        {
+            // Arrange
+            const string path = @"..\..\Artifacts\sunnyData.txt";
+
+            // Act
+            var baxter = BuildBaxterProblem(path);
+            var svm = BuildSvmProblem(path);
+
+            // Assert
+            Assert.AreEqual(svm.l, baxter.L);
+            Assert.AreEqual(svm.x.Length, baxter.X.Length);
+            Assert.IsTrue(svm.x.Any());
+            Assert.IsTrue(baxter.X.Any());
+            Assert.AreEqual(svm.x[0].Length, baxter.X[0].Length);
+            Assert.AreEqual(svm.x[0][0].value, baxter.X[0][0].Value);
+            Assert.AreEqual(svm.x[1][0].value, baxter.X[1][0].Value);
+            Assert.AreEqual(svm.x[2][0].value, baxter.X[2][0].Value);
+            Assert.AreEqual(svm.x[3][0].value, baxter.X[3][0].Value);
+        }
+
+        [TestMethod]
         public void DataReader003OpensAndReadsContentsOfData()
         {
             // Arrange
@@ -143,6 +213,75 @@ namespace Baxter.Text.Tests
         private static IEnumerable<string> GetWords(string x)
         {
             return x.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        private double BaxterPrediction(string trainingDataFilePath, string input)
+        {
+            var problem = BuildBaxterProblem(trainingDataFilePath);
+            var vocabulary = BuildBaxterVocabulary(trainingDataFilePath);
+            const int C = 1;
+            var model = new Classifier(problem, Vector.Machine.KernelHelper.LinearKernel(), C);
+            var newX = TextClassificationBuilder.CreateNode(input, vocabulary);
+
+            return model.Predict(newX);
+        }
+
+        private Model BuildBaxterModel(string trainingDataFilePath)
+        {
+            var problem = BuildBaxterProblem(trainingDataFilePath);
+            const int C = 1;
+            var model = new Classifier(problem, Vector.Machine.KernelHelper.LinearKernel(), C);
+            return model.Model;
+        }
+
+        private Problem BuildBaxterProblem(string trainingDataFilePath)
+        {
+            var dataTable = DataTable.New.ReadCsv(trainingDataFilePath);
+            var x = dataTable.Rows.Select(row => row["Text"]).ToList();
+            var y = dataTable.Rows.Select(row => double.Parse(row["IsSunny"])).ToArray();
+            var vocabulary = x.SelectMany(GetWords).Distinct().OrderBy(word => word).ToList();
+            var problemBuilder = new TextClassificationBuilder();
+            return problemBuilder.CreateProblem(x, y, vocabulary.ToList());
+        }
+
+        private List<string> BuildBaxterVocabulary(string trainingDataFilePath)
+        {
+            var dataTable = DataTable.New.ReadCsv(trainingDataFilePath);
+            var x = dataTable.Rows.Select(row => row["Text"]).ToList();
+            var y = dataTable.Rows.Select(row => double.Parse(row["IsSunny"]))
+                .ToArray();
+            return x.SelectMany(GetWords).Distinct().OrderBy(word => word).ToList();
+        }
+
+        private svm_model BuildSvmModel(string trainingDataFilePath)
+        {
+            var problem = BuildSvmProblem(trainingDataFilePath);
+
+            const int C = 1;
+            var svc = new C_SVC(problem, libsvm.KernelHelper.LinearKernel(), C);
+            return svc.model;
+        }
+
+        private svm_problem BuildSvmProblem(string trainingDataFilePath)
+        {
+            var dataTable = DataTable.New.ReadCsv(trainingDataFilePath);
+            var x = dataTable.Rows.Select(row => row["Text"]).ToList();
+            var y = dataTable.Rows.Select(row => double.Parse(row["IsSunny"])).ToArray();
+            var vocabulary = x.SelectMany(GetWords).Distinct().OrderBy(word => word).ToList();
+            var problemBuilder = new TextClassificationProblemBuilder();
+
+            return problemBuilder.CreateProblem(x, y, vocabulary.ToList());
+        }
+
+        private double SvmPrediction(string trainingDataFilePath, string input)
+        {
+            var problem = BuildSvmProblem(trainingDataFilePath);
+            var vocabulary = BuildBaxterVocabulary(trainingDataFilePath);
+            const int C = 1;
+            var model = new C_SVC(problem, libsvm.KernelHelper.LinearKernel(), C);
+            var newX = TextClassificationProblemBuilder.CreateNode(input, vocabulary);
+
+            return model.Predict(newX);
         }
     }
 }

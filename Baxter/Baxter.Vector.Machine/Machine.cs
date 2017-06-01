@@ -22,303 +22,58 @@ namespace Baxter.Vector.Machine
             Train();
         }
 
-        /// <summary>
-        /// Train the SVM and save the model
-        /// </summary>
-        public void Train()
-        {
-            Model = svm_train(Problem, Parameter);
-        }
-
-        public static Model svm_train(Problem prob, Parameter param)
-        {
-            Model model = new Model();
-            model.Parameter = param;
-
-            if (param.SvmType == Parameter.OneClass ||
-                param.SvmType == Parameter.Epsilon ||
-                param.SvmType == Parameter.NuSvr)
-            {
-                // regression or one-class-svm
-                model.NrClass = 2;
-                model.Label = null;
-                model.Nsv = null;
-                model.ProbA = null; model.ProbB = null;
-                model.SvCoef = new double[1][];
-
-                if (param.Probability == 1 &&
-                    (param.SvmType == Parameter.Epsilon ||
-                     param.SvmType == Parameter.NuSvr))
-                {
-                    model.ProbA = new double[1];
-                    model.ProbB[0] = svm_svr_probability(prob, param);
-                }
-
-                decision_function f = svm_train_one(prob, param, 0, 0);
-                model.Rho = new double[1];
-                model.Rho[0] = f.rho;
-
-                int nSV = 0;
-                int i;
-                for (i = 0; i < prob.L; i++)
-                    if (Math.Abs(f.alpha[i]) > 0) ++nSV;
-                model.L = nSV;
-                model.SvNodes = new Node[nSV][];
-                model.SvCoef[0] = new double[nSV];
-                model.SvIndicies = new int[nSV];
-                int j = 0;
-                for (i = 0; i < prob.L; i++)
-                    if (Math.Abs(f.alpha[i]) > 0)
-                    {
-                        model.SvNodes[j] = prob.X[i];
-                        model.SvCoef[0][j] = f.alpha[i];
-                        model.SvIndicies[j] = i + 1;
-                        ++j;
-                    }
-            }
-            else
-            {
-                // classification
-                int l = prob.L;
-                int[] tmp_nr_class = new int[1];
-                int[][] tmp_label = new int[1][];
-                int[][] tmp_start = new int[1][];
-                int[][] tmp_count = new int[1][];
-                int[] perm = new int[l];
-
-                // group training data of the same class
-                svm_group_classes(prob, out tmp_nr_class, out tmp_label, out tmp_start, out tmp_count, perm);
-                int nr_class = tmp_nr_class[0];
-                int[] label = tmp_label[0];
-                int[] start = tmp_start[0];
-                int[] count = tmp_count[0];
-
-                //if (nr_class == 1)
-                //    svm.info("WARNING: training data in only one class. See README for details.\n");
-
-                Node[][] x = new Node[l][];
-                int i;
-                for (i = 0; i < l; i++)
-                    x[i] = prob.X[perm[i]];
-
-                // calculate weighted C
-
-                double[] weighted_C = new double[nr_class];
-                for (i = 0; i < nr_class; i++)
-                    weighted_C[i] = param.C;
-                for (i = 0; i < param.NrWeight; i++)
-                {
-                    int j;
-                    for (j = 0; j < nr_class; j++)
-                        if (param.WeightLabel[i] == label[j])
-                            break;
-                    if (j == nr_class)
-                    { }
-                    //  System.err.print("WARNING: class label " + param.weight_label[i] + " specified in weight is not found\n");
-                    else
-                        weighted_C[j] *= param.Weight[i];
-                }
-
-                // train k*(k-1)/2 models
-
-                bool[] nonzero = new bool[l];
-                for (i = 0; i < l; i++)
-                    nonzero[i] = false;
-                decision_function[] f = new decision_function[nr_class * (nr_class - 1) / 2];
-
-                double[] probA = null, probB = null;
-                if (param.Probability == 1)
-                {
-                    probA = new double[nr_class * (nr_class - 1) / 2];
-                    probB = new double[nr_class * (nr_class - 1) / 2];
-                }
-
-                int p = 0;
-                for (i = 0; i < nr_class; i++)
-                    for (int j = i + 1; j < nr_class; j++)
-                    {
-                        Problem sub_prob = new Problem();
-                        int si = start[i], sj = start[j];
-                        int ci = count[i], cj = count[j];
-                        sub_prob.L = ci + cj;
-                        sub_prob.X = new Node[sub_prob.L][];
-                        sub_prob.Y = new double[sub_prob.L];
-                        int k;
-                        for (k = 0; k < ci; k++)
-                        {
-                            sub_prob.X[k] = x[si + k];
-                            sub_prob.Y[k] = +1;
-                        }
-                        for (k = 0; k < cj; k++)
-                        {
-                            sub_prob.X[ci + k] = x[sj + k];
-                            sub_prob.Y[ci + k] = -1;
-                        }
-
-                        if (param.Probability == 1)
-                        {
-                            double[] probAB = new double[2];
-                            svm_binary_svc_probability(sub_prob, param, weighted_C[i], weighted_C[j], probAB);
-                            probA[p] = probAB[0];
-                            probB[p] = probAB[1];
-                        }
-
-                        f[p] = svm_train_one(sub_prob, param, weighted_C[i], weighted_C[j]);
-                        for (k = 0; k < ci; k++)
-                            if (!nonzero[si + k] && Math.Abs(f[p].alpha[k]) > 0)
-                                nonzero[si + k] = true;
-                        for (k = 0; k < cj; k++)
-                            if (!nonzero[sj + k] && Math.Abs(f[p].alpha[ci + k]) > 0)
-                                nonzero[sj + k] = true;
-                        ++p;
-                    }
-
-                // build output
-
-                model.NrClass = nr_class;
-
-                model.Label = new int[nr_class];
-                for (i = 0; i < nr_class; i++)
-                    model.Label[i] = label[i];
-
-                model.Rho = new double[nr_class * (nr_class - 1) / 2];
-                for (i = 0; i < nr_class * (nr_class - 1) / 2; i++)
-                    model.Rho[i] = f[i].rho;
-
-                if (param.Probability == 1)
-                {
-                    model.ProbA = new double[nr_class * (nr_class - 1) / 2];
-                    model.ProbB = new double[nr_class * (nr_class - 1) / 2];
-                    for (i = 0; i < nr_class * (nr_class - 1) / 2; i++)
-                    {
-                        model.ProbA[i] = probA[i];
-                        model.ProbB[i] = probB[i];
-                    }
-                }
-                else
-                {
-                    model.ProbA = null;
-                    model.ProbB = null;
-                }
-
-                int nnz = 0;
-                int[] nz_count = new int[nr_class];
-                model.Nsv = new int[nr_class];
-                for (i = 0; i < nr_class; i++)
-                {
-                    int nSV = 0;
-                    for (int j = 0; j < count[i]; j++)
-                        if (nonzero[start[i] + j])
-                        {
-                            ++nSV;
-                            ++nnz;
-                        }
-                    model.Nsv[i] = nSV;
-                    nz_count[i] = nSV;
-                }
-
-                //svm.info("Total nSV = " + nnz + "\n");
-
-                model.L = nnz;
-                model.SvNodes = new Node[nnz][];
-                model.SvIndicies = new int[nnz];
-                p = 0;
-                for (i = 0; i < l; i++)
-                    if (nonzero[i])
-                    {
-                        model.SvNodes[p] = x[i];
-                        model.SvIndicies[p++] = perm[i] + 1;
-                    }
-
-                int[] nz_start = new int[nr_class];
-                nz_start[0] = 0;
-                for (i = 1; i < nr_class; i++)
-                    nz_start[i] = nz_start[i - 1] + nz_count[i - 1];
-
-                model.SvCoef = new double[nr_class - 1][];
-                for (i = 0; i < nr_class - 1; i++)
-                    model.SvCoef[i] = new double[nnz];
-
-                p = 0;
-                for (i = 0; i < nr_class; i++)
-                    for (int j = i + 1; j < nr_class; j++)
-                    {
-                        // classifier (i,j): coefficients with
-                        // i are in sv_coef[j-1][nz_start[i]...],
-                        // j are in sv_coef[i][nz_start[j]...]
-
-                        int si = start[i];
-                        int sj = start[j];
-                        int ci = count[i];
-                        int cj = count[j];
-
-                        int q = nz_start[i];
-                        int k;
-                        for (k = 0; k < ci; k++)
-                            if (nonzero[si + k])
-                                model.SvCoef[j - 1][q++] = f[p].alpha[k];
-                        q = nz_start[j];
-                        for (k = 0; k < cj; k++)
-                            if (nonzero[sj + k])
-                                model.SvCoef[i][q++] = f[p].alpha[ci + k];
-                        ++p;
-                    }
-            }
-            return model;
-        }
-
         protected Machine(string input_file_name, Parameter param)
         {
         }
 
         protected Machine(Problem prob, int svm_type, Kernel kernel, double C, double nu, double cache_size, double eps,
-            double p, int shrinking, int probability, int nr_weight, int[] weight_label, double[] weight)
-            : this(prob, new Parameter()
-            {
-                SvmType = svm_type,
-                KernelType = (int)kernel.KernelType,
-                Degree = kernel.Degree,
-                C = C,
-                Gamma = kernel.Gamma,
-                Coef0 = kernel.R,
-                Nu = nu,
-                CacheSize = cache_size,
-                Eps = eps,
-                P = p,
-                Shrinking = shrinking,
-                Probability = probability,
-                NrWeight = nr_weight,
-                WeightLabel = weight_label,
-                Weight = weight,
-            })
+                    double p, int shrinking, int probability, int nr_weight, int[] weight_label, double[] weight)
+                    : this(prob, new Parameter()
+                    {
+                        SvmType = svm_type,
+                        KernelType = (int)kernel.KernelType,
+                        Degree = kernel.Degree,
+                        C = C,
+                        Gamma = kernel.Gamma,
+                        Coef0 = kernel.R,
+                        Nu = nu,
+                        CacheSize = cache_size,
+                        Eps = eps,
+                        P = p,
+                        Shrinking = shrinking,
+                        Probability = probability,
+                        NrWeight = nr_weight,
+                        WeightLabel = weight_label,
+                        Weight = weight,
+                    })
         {
         }
 
         protected Machine(Problem prob, int svm_type, int kernel_type, int degree, double C, double gamma, double coef0,
-            double nu, double cache_size, double eps, double p, int shrinking, int probability, int nr_weight,
-            int[] weight_label, double[] weight)
-            : this(prob, new Parameter()
-            {
-                SvmType = svm_type,
-                KernelType = kernel_type,
-                Degree = degree,
-                C = C,
-                Gamma = gamma,
-                Coef0 = coef0,
-                Nu = nu,
-                CacheSize = cache_size,
-                Eps = eps,
-                P = p,
-                Shrinking = shrinking,
-                Probability = probability,
-                NrWeight = nr_weight,
-                WeightLabel = weight_label,
-                Weight = weight,
-            })
+                    double nu, double cache_size, double eps, double p, int shrinking, int probability, int nr_weight,
+                    int[] weight_label, double[] weight)
+                    : this(prob, new Parameter()
+                    {
+                        SvmType = svm_type,
+                        KernelType = kernel_type,
+                        Degree = degree,
+                        C = C,
+                        Gamma = gamma,
+                        Coef0 = coef0,
+                        Nu = nu,
+                        CacheSize = cache_size,
+                        Eps = eps,
+                        P = p,
+                        Shrinking = shrinking,
+                        Probability = probability,
+                        NrWeight = nr_weight,
+                        WeightLabel = weight_label,
+                        Weight = weight,
+                    })
         {
         }
 
-        protected Model Model { get; set; }
+        public Model Model { get; set; }
 
         protected Parameter Parameter { get; set; }
 
@@ -702,6 +457,243 @@ namespace Baxter.Vector.Machine
             }
         }
 
+        public static Model svm_train(Problem prob, Parameter param)
+        {
+            Model model = new Model();
+            model.Parameter = param;
+
+            if (param.SvmType == Parameter.OneClass ||
+                param.SvmType == Parameter.Epsilon ||
+                param.SvmType == Parameter.NuSvr)
+            {
+                // regression or one-class-svm
+                model.NrClass = 2;
+                model.Label = null;
+                model.Nsv = null;
+                model.ProbA = null; model.ProbB = null;
+                model.SvCoef = new double[1][];
+
+                if (param.Probability == 1 &&
+                    (param.SvmType == Parameter.Epsilon ||
+                     param.SvmType == Parameter.NuSvr))
+                {
+                    model.ProbA = new double[1];
+                    model.ProbB[0] = svm_svr_probability(prob, param);
+                }
+
+                decision_function f = svm_train_one(prob, param, 0, 0);
+                model.Rho = new double[1];
+                model.Rho[0] = f.rho;
+
+                int nSV = 0;
+                int i;
+                for (i = 0; i < prob.L; i++)
+                    if (Math.Abs(f.alpha[i]) > 0) ++nSV;
+                model.L = nSV;
+                model.SvNodes = new Node[nSV][];
+                model.SvCoef[0] = new double[nSV];
+                model.SvIndicies = new int[nSV];
+                int j = 0;
+                for (i = 0; i < prob.L; i++)
+                    if (Math.Abs(f.alpha[i]) > 0)
+                    {
+                        model.SvNodes[j] = prob.X[i];
+                        model.SvCoef[0][j] = f.alpha[i];
+                        model.SvIndicies[j] = i + 1;
+                        ++j;
+                    }
+            }
+            else
+            {
+                // classification
+                int l = prob.L;
+                int[] tmp_nr_class = new int[1];
+                int[][] tmp_label = new int[1][];
+                int[][] tmp_start = new int[1][];
+                int[][] tmp_count = new int[1][];
+                int[] perm = new int[l];
+
+                // group training data of the same class
+                svm_group_classes(prob, out tmp_nr_class, out tmp_label, out tmp_start, out tmp_count, perm);
+                int nr_class = tmp_nr_class[0];
+                int[] label = tmp_label[0];
+                int[] start = tmp_start[0];
+                int[] count = tmp_count[0];
+
+                //if (nr_class == 1)
+                //    svm.info("WARNING: training data in only one class. See README for details.\n");
+
+                Node[][] x = new Node[l][];
+                int i;
+                for (i = 0; i < l; i++)
+                    x[i] = prob.X[perm[i]];
+
+                // calculate weighted C
+
+                double[] weighted_C = new double[nr_class];
+                for (i = 0; i < nr_class; i++)
+                    weighted_C[i] = param.C;
+                for (i = 0; i < param.NrWeight; i++)
+                {
+                    int j;
+                    for (j = 0; j < nr_class; j++)
+                        if (param.WeightLabel[i] == label[j])
+                            break;
+                    if (j == nr_class)
+                    { }
+                    // System.err.print("WARNING: class label " + param.weight_label[i] + " specified
+                    // in weight is not found\n");
+                    else
+                        weighted_C[j] *= param.Weight[i];
+                }
+
+                // train k*(k-1)/2 models
+
+                bool[] nonzero = new bool[l];
+                for (i = 0; i < l; i++)
+                    nonzero[i] = false;
+                decision_function[] f = new decision_function[nr_class * (nr_class - 1) / 2];
+
+                double[] probA = null, probB = null;
+                if (param.Probability == 1)
+                {
+                    probA = new double[nr_class * (nr_class - 1) / 2];
+                    probB = new double[nr_class * (nr_class - 1) / 2];
+                }
+
+                int p = 0;
+                for (i = 0; i < nr_class; i++)
+                    for (int j = i + 1; j < nr_class; j++)
+                    {
+                        Problem sub_prob = new Problem();
+                        int si = start[i], sj = start[j];
+                        int ci = count[i], cj = count[j];
+                        sub_prob.L = ci + cj;
+                        sub_prob.X = new Node[sub_prob.L][];
+                        sub_prob.Y = new double[sub_prob.L];
+                        int k;
+                        for (k = 0; k < ci; k++)
+                        {
+                            sub_prob.X[k] = x[si + k];
+                            sub_prob.Y[k] = +1;
+                        }
+                        for (k = 0; k < cj; k++)
+                        {
+                            sub_prob.X[ci + k] = x[sj + k];
+                            sub_prob.Y[ci + k] = -1;
+                        }
+
+                        if (param.Probability == 1)
+                        {
+                            double[] probAB = new double[2];
+                            svm_binary_svc_probability(sub_prob, param, weighted_C[i], weighted_C[j], probAB);
+                            probA[p] = probAB[0];
+                            probB[p] = probAB[1];
+                        }
+
+                        f[p] = svm_train_one(sub_prob, param, weighted_C[i], weighted_C[j]);
+                        for (k = 0; k < ci; k++)
+                            if (!nonzero[si + k] && Math.Abs(f[p].alpha[k]) > 0)
+                                nonzero[si + k] = true;
+                        for (k = 0; k < cj; k++)
+                            if (!nonzero[sj + k] && Math.Abs(f[p].alpha[ci + k]) > 0)
+                                nonzero[sj + k] = true;
+                        ++p;
+                    }
+
+                // build output
+
+                model.NrClass = nr_class;
+
+                model.Label = new int[nr_class];
+                for (i = 0; i < nr_class; i++)
+                    model.Label[i] = label[i];
+
+                model.Rho = new double[nr_class * (nr_class - 1) / 2];
+                for (i = 0; i < nr_class * (nr_class - 1) / 2; i++)
+                    model.Rho[i] = f[i].rho;
+
+                if (param.Probability == 1)
+                {
+                    model.ProbA = new double[nr_class * (nr_class - 1) / 2];
+                    model.ProbB = new double[nr_class * (nr_class - 1) / 2];
+                    for (i = 0; i < nr_class * (nr_class - 1) / 2; i++)
+                    {
+                        model.ProbA[i] = probA[i];
+                        model.ProbB[i] = probB[i];
+                    }
+                }
+                else
+                {
+                    model.ProbA = null;
+                    model.ProbB = null;
+                }
+
+                int nnz = 0;
+                int[] nz_count = new int[nr_class];
+                model.Nsv = new int[nr_class];
+                for (i = 0; i < nr_class; i++)
+                {
+                    int nSV = 0;
+                    for (int j = 0; j < count[i]; j++)
+                        if (nonzero[start[i] + j])
+                        {
+                            ++nSV;
+                            ++nnz;
+                        }
+                    model.Nsv[i] = nSV;
+                    nz_count[i] = nSV;
+                }
+
+                //svm.info("Total nSV = " + nnz + "\n");
+
+                model.L = nnz;
+                model.SvNodes = new Node[nnz][];
+                model.SvIndicies = new int[nnz];
+                p = 0;
+                for (i = 0; i < l; i++)
+                    if (nonzero[i])
+                    {
+                        model.SvNodes[p] = x[i];
+                        model.SvIndicies[p++] = perm[i] + 1;
+                    }
+
+                int[] nz_start = new int[nr_class];
+                nz_start[0] = 0;
+                for (i = 1; i < nr_class; i++)
+                    nz_start[i] = nz_start[i - 1] + nz_count[i - 1];
+
+                model.SvCoef = new double[nr_class - 1][];
+                for (i = 0; i < nr_class - 1; i++)
+                    model.SvCoef[i] = new double[nnz];
+
+                p = 0;
+                for (i = 0; i < nr_class; i++)
+                    for (int j = i + 1; j < nr_class; j++)
+                    {
+                        // classifier (i,j): coefficients with i are in sv_coef[j-1][nz_start[i]...],
+                        // j are in sv_coef[i][nz_start[j]...]
+
+                        int si = start[i];
+                        int sj = start[j];
+                        int ci = count[i];
+                        int cj = count[j];
+
+                        int q = nz_start[i];
+                        int k;
+                        for (k = 0; k < ci; k++)
+                            if (nonzero[si + k])
+                                model.SvCoef[j - 1][q++] = f[p].alpha[k];
+                        q = nz_start[j];
+                        for (k = 0; k < cj; k++)
+                            if (nonzero[sj + k])
+                                model.SvCoef[i][q++] = f[p].alpha[ci + k];
+                        ++p;
+                    }
+            }
+            return model;
+        }
+
         //svm_train
         public static Model Train(Problem problem, Parameter parameter)
         {
@@ -946,6 +938,12 @@ namespace Baxter.Vector.Machine
         }
 
         public abstract double Predict(Node[] nodes);
+
+        /// <summary>Train the SVM and save the model</summary>
+        public void Train()
+        {
+            Model = svm_train(Problem, Parameter);
+        }
 
         // Method 2 from the multiclass_prob paper by Wu, Lin, and Weng
         private static void multiclass_probability(int k, double[][] r, double[] p)
@@ -1446,11 +1444,9 @@ namespace Baxter.Vector.Machine
                 }
             }
 
-            //
-            // Labels are ordered by their first occurrence in the training set.
-            // However, for two-class sets with -1/+1 labels and -1 appears first,
-            // we swap labels to ensure that internally the binary SVM has positive data corresponding to the +1 instances.
-            //
+            // Labels are ordered by their first occurrence in the training set. However, for
+            // two-class sets with -1/+1 labels and -1 appears first, we swap labels to ensure that
+            // internally the binary SVM has positive data corresponding to the +1 instances.
             if (nr_class == 2 && label[0] == -1 && label[1] == +1)
             {
                 do { int tmp = label[0]; label[0] = label[1]; label[1] = tmp; } while (false);

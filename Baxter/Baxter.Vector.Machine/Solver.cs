@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,13 +28,6 @@ namespace Baxter.Vector.Machine
         public static void Solve(Quandary quandary)
         {
             var solution = new Solution(quandary);
-
-            // optimization step
-
-            int iter = 0;
-            int max_iter = Math.Max(10000000, l > Int32.MaxValue / 100 ? Int32.MaxValue : 100 * l);
-            int counter = Math.Min(l, 1000) + 1;
-            int[] working_set = new int[2];
 
             while (iter < max_iter)
             {
@@ -534,14 +528,7 @@ namespace Baxter.Vector.Machine
             return 0;
         }
 
-        private void update_alpha_status(int i)
-        {
-            if (alpha[i] >= get_C(i))
-                alpha_status[i] = UPPER_BOUND;
-            else if (alpha[i] <= 0)
-                alpha_status[i] = LOWER_BOUND;
-            else alpha_status[i] = FREE;
-        }
+        //UpdateRowSource alpa status
 
         // java: information about solution except alpha, because we cannot return multiple values otherwise...
         internal class SolutionInfo

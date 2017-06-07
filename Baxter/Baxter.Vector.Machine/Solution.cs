@@ -8,6 +8,8 @@ namespace Baxter.Vector.Machine
 {
     internal class Solution
     {
+        public int[] WorkingSet = new int[2];
+
         private static byte FREE = 2;
         private static byte LOWER_BOUND = 0;
         private static byte UPPER_BOUND = 1;
@@ -28,8 +30,14 @@ namespace Baxter.Vector.Machine
             Cn = quandary.Cn;
             Eps = quandary.Eps;
             Unshrink = false;
+            AlphaStatus = new byte[L];
 
             Initialize();
+
+            Iterator = 0;
+            MaxIterator = Math.Max(10000000, L > Int32.MaxValue / 100 ? Int32.MaxValue : 100 * L);
+            Counter = Math.Min(L, 1000) + 1;
+            WorkingSet = new int[2];
         }
 
         public int[] ActiveSet { get; set; }
@@ -42,6 +50,9 @@ namespace Baxter.Vector.Machine
 
         public double Cn { get; set; }
 
+        public int Counter { get; set; }
+
+        //= Math.Min(l, 1000) + 1;
         public double Cp { get; set; }
 
         public double Eps { get; set; }
@@ -52,8 +63,12 @@ namespace Baxter.Vector.Machine
 
         public double Infinite { get; set; } = double.PositiveInfinity;
 
+        public int Iterator { get; set; } = 0;
+
         // gradient, if we treat free variables as 0
         public int L { get; set; }
+
+        public int MaxIterator { get; set; } //= Math.Max(10000000, l > Int32.MaxValue / 100 ? Int32.MaxValue : 100 * l);
 
         public double[] P { get; set; }
 
@@ -81,14 +96,31 @@ namespace Baxter.Vector.Machine
             return array[i] == UPPER_BOUND;
         }
 
+        private static double get_C(byte[] y, double cn, double cp, int i)
+        {
+            return (y[i] > 0) ? cp : cn;
+        }
+
+        private static byte update_alpha_status(byte[] y, double cn, double cp, double[] alpha, byte[] status, int i)
+        {
+            var results = status[i];
+
+            if (alpha[i] >= get_C(y, cn, cp, i))
+                results = UPPER_BOUND;
+            else if (alpha[i] <= 0)
+                results = LOWER_BOUND;
+            else results = FREE;
+
+            return results;
+        }
+
         private void Initialize()
         {
             // initialize alpha_status
             {
-                AlphaStatus = new byte[L];
                 for (var i = 0; i < L; i++)
                 {
-                    update_alpha_status(i);
+                    AlphaStatus[i] = update_alpha_status(Y, Cn, Cp, Alpha, AlphaStatus, i);
                 }
             }
 
@@ -124,7 +156,7 @@ namespace Baxter.Vector.Machine
                             G[j] += alpha_i * Q_i[j];
                         if (IsUpperBound(AlphaStatus, i))
                             for (j = 0; j < L; j++)
-                                GBar[j] += get_C(i) * Q_i[j];
+                                GBar[j] += get_C(Y, Cn, Cp, i) * Q_i[j];
                     }
                 }
             }

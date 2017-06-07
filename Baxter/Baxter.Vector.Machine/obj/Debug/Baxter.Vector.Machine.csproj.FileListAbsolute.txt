@@ -8,3 +8,7 @@ C:\Users\david\Dropbox\Src\VSGIT\Baxter\Baxter\Baxter.Vector.Machine\bin\Debug\B
 C:\Users\david\Dropbox\Src\VSGIT\Baxter\Baxter\Baxter.Vector.Machine\obj\Debug\Baxter.Vector.Machine.csprojResolveAssemblyReference.cache
 C:\Users\david\Dropbox\Src\VSGIT\Baxter\Baxter\Baxter.Vector.Machine\obj\Debug\Baxter.Vector.Machine.dll
 C:\Users\david\Dropbox\Src\VSGIT\Baxter\Baxter\Baxter.Vector.Machine\obj\Debug\Baxter.Vector.Machine.pdb
+C:\Users\david\Dropbox\Src\VSGIT\Baxter\Baxter\Baxter.Vector.Machine\bin\Debug\ICSharpCode.SharpZipLib.dll
+C:\Users\david\Dropbox\Src\VSGIT\Baxter\Baxter\Baxter.Vector.Machine\bin\Debug\Lucene.Net.dll
+C:\Users\david\Dropbox\Src\VSGIT\Baxter\Baxter\Baxter.Vector.Machine\bin\Debug\Lucene.Net.pdb
+C:\Users\david\Dropbox\Src\VSGIT\Baxter\Baxter\Baxter.Vector.Machine\bin\Debug\Lucene.Net.xml

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Baxter.Vector.Machine;
+using KernelType = libsvm.KernelType;
 
 namespace Baxter.Text.Tests
 {
@@ -25,7 +26,8 @@ namespace Baxter.Text.Tests
             // Assert
             Assert.AreEqual(svm.Degree, baxter.Degree);
             Assert.AreEqual(svm.Gamma, baxter.Gamma);
-            Assert.AreEqual(svm.KernelType, baxter.KernelType);
+            Assert.AreEqual(svm.KernelType, KernelType.LINEAR);
+            Assert.AreEqual(baxter.KernelType, Vector.Machine.KernelType.Linear);
             Assert.AreEqual(svm.R, baxter.R);
         }
 

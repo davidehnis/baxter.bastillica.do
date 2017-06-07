@@ -488,7 +488,12 @@ namespace Baxter.Vector.Machine
                 int nSV = 0;
                 int i;
                 for (i = 0; i < prob.L; i++)
-                    if (Math.Abs(f.alpha[i]) > 0) ++nSV;
+                {
+                    if (Math.Abs(f.alpha[i]) > 0)
+                    {
+                        ++nSV;
+                    }
+                }
                 model.L = nSV;
                 model.SvNodes = new Node[nSV][];
                 model.SvCoef[0] = new double[nSV];
@@ -561,7 +566,7 @@ namespace Baxter.Vector.Machine
                     probB = new double[nr_class * (nr_class - 1) / 2];
                 }
 
-                int p = 0;
+                var p = 0;
                 for (i = 0; i < nr_class; i++)
                     for (int j = i + 1; j < nr_class; j++)
                     {
@@ -571,13 +576,13 @@ namespace Baxter.Vector.Machine
                         sub_prob.L = ci + cj;
                         sub_prob.X = new Node[sub_prob.L][];
                         sub_prob.Y = new double[sub_prob.L];
-                        int k;
-                        for (k = 0; k < ci; k++)
+                        //int k;
+                        for (var k = 0; k < ci; k++)
                         {
                             sub_prob.X[k] = x[si + k];
                             sub_prob.Y[k] = +1;
                         }
-                        for (k = 0; k < cj; k++)
+                        for (var k = 0; k < cj; k++)
                         {
                             sub_prob.X[ci + k] = x[sj + k];
                             sub_prob.Y[ci + k] = -1;
@@ -592,13 +597,13 @@ namespace Baxter.Vector.Machine
                         }
 
                         f[p] = svm_train_one(sub_prob, param, weighted_C[i], weighted_C[j]);
-                        for (k = 0; k < ci; k++)
+                        for (var k = 0; k < ci; k++)
                             if (!nonzero[si + k] && Math.Abs(f[p].alpha[k]) > 0)
                                 nonzero[si + k] = true;
-                        for (k = 0; k < cj; k++)
+                        for (var k = 0; k < cj; k++)
                             if (!nonzero[sj + k] && Math.Abs(f[p].alpha[ci + k]) > 0)
                                 nonzero[sj + k] = true;
-                        ++p;
+                        p++;
                     }
 
                 // build output
@@ -1141,9 +1146,9 @@ namespace Baxter.Vector.Machine
             double[] minus_ones = new double[l];
             byte[] y = new byte[l];
 
-            int i;
+            //int i;
 
-            for (i = 0; i < l; i++)
+            for (var i = 0; i < l; i++)
             {
                 alpha[i] = 0;
                 minus_ones[i] = -1;
@@ -1156,13 +1161,13 @@ namespace Baxter.Vector.Machine
                 alpha, Cp, Cn, param.Eps, si, param.Shrinking);
 
             double sum_alpha = 0;
-            for (i = 0; i < l; i++)
+            for (var i = 0; i < l; i++)
                 sum_alpha += alpha[i];
 
             //if (Cp == Cn)
             //    svm.info("nu = " + sum_alpha / (Cp * prob.L) + "\n");
 
-            for (i = 0; i < l; i++)
+            for (var i = 0; i < l; i++)
                 alpha[i] *= y[i];
         }
 
@@ -1510,8 +1515,7 @@ namespace Baxter.Vector.Machine
             return mae;
         }
 
-        private static decision_function svm_train_one(
-                                            Problem prob, Parameter param,
+        private static decision_function svm_train_one(Problem prob, Parameter param,
             double Cp, double Cn)
         {
             double[] alpha = new double[prob.L];

@@ -48,7 +48,12 @@ namespace Baxter.Vector.Machine
 
         public byte[] AlphaStatus { get; set; }
 
+        public double Rho { get; set; }
+
         public double Cn { get; set; }
+
+        public double Gmax1 { get; set; }
+        public double Gmax2 { get; set; }
 
         public int Counter { get; set; }
 
@@ -71,6 +76,8 @@ namespace Baxter.Vector.Machine
         public int MaxIterator { get; set; } //= Math.Max(10000000, l > Int32.MaxValue / 100 ? Int32.MaxValue : 100 * l);
 
         public double[] P { get; set; }
+
+        //public int[] WorkingSet { get; set; } = new int[2];
 
         // gradient of objective function LOWER_BOUND, UPPER_BOUND, FREE
         public QMatrix Q { get; set; }

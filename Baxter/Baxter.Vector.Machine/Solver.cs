@@ -29,6 +29,10 @@ namespace Baxter.Vector.Machine
         {
             var solution = new Solution(quandary);
 
+            var iter = 0;
+            var max_iter = Math.Max(10000000, quandary.L > int.MaxValue / 100 ? int.MaxValue : 100 * quandary.L);
+            var counter = Math.Min(quandary.L, 1000) + 1;
+
             while (iter < max_iter)
             {
                 // show progress and do shrinking
@@ -36,13 +40,13 @@ namespace Baxter.Vector.Machine
                 if (--counter == 0)
                 {
                     counter = Math.Min(l, 1000);
-                    if (shrinking != 0)
+                    if (quandary.Shrinking != 0)
                     {
-                        do_shrinking();
+                        solution = Shrink(solution);
                     }
                 }
 
-                if (select_working_set(out working_set) != 0)
+                if (select_working_set(solution) != 0)
                 {
                     // reconstruct the whole gradient
                     reconstruct_gradient();
@@ -171,8 +175,8 @@ namespace Baxter.Vector.Machine
                 // update alpha_status and G_bar
 
                 {
-                    bool ui = is_upper_bound(i);
-                    bool uj = is_upper_bound(j);
+                    bool ui = IsUpperBound(i, solution);
+                    bool uj = IsUpperBound(j, solution);
                     update_alpha_status(i);
                     update_alpha_status(j);
                     int k;
@@ -238,53 +242,59 @@ namespace Baxter.Vector.Machine
             //svm.info("\noptimization finished, #iter = " + iter + "\n");
         }
 
-        protected bool is_free(int i)
-        { return alpha_status[i] == FREE; }
+        protected static bool IsFree(int i, Solution solution)
+        {
+            return solution.AlphaStatus[i] == FREE;
+        }
 
-        protected bool is_lower_bound(int i)
-        { return alpha_status[i] == LOWER_BOUND; }
+        protected static bool IsLowerBound(int i, Solution solution)
+        {
+            return solution.AlphaStatus[i] == LOWER_BOUND;
+        }
 
-        protected bool is_upper_bound(int i)
-        { return alpha_status[i] == UPPER_BOUND; }
+        protected static bool IsUpperBound(int i, Solution solution)
+        {
+            return solution.AlphaStatus[i] == UPPER_BOUND;
+        }
 
-        protected void reconstruct_gradient()
+        protected static void ReconstructGradient(Solution solution)
         {
             // reconstruct inactive elements of G from G_bar and free variables
 
-            if (active_size == l) return;
+            if (solution.ActiveSize == solution.L) return;
 
             int i, j;
             int nr_free = 0;
 
-            for (j = active_size; j < l; j++)
-                G[j] = G_bar[j] + p[j];
+            for (j = solution.ActiveSize; j < solution.L; j++)
+                solution.G[j] = solution.GBar[j] + solution.P[j];
 
-            for (j = 0; j < active_size; j++)
-                if (is_free(j))
+            for (j = 0; j < solution.ActiveSize; j++)
+                if (IsFree(j, solution))
                     nr_free++;
 
             //if (2 * nr_free < active_size)
             //    svm.info("\nWARNING: using -h 0 may be faster\n");
 
-            if (nr_free * l > 2 * active_size * (l - active_size))
+            if (nr_free * solution.L > 2 * solution.ActiveSize * (solution.L - solution.ActiveSize))
             {
-                for (i = active_size; i < l; i++)
+                for (i = solution.ActiveSize; i < solution.L; i++)
                 {
-                    float[] Q_i = Q.get_Q(i, active_size);
-                    for (j = 0; j < active_size; j++)
-                        if (is_free(j))
-                            G[i] += alpha[j] * Q_i[j];
+                    float[] Q_i = solution.Q.get_Q(i, solution.ActiveSize);
+                    for (j = 0; j < solution.ActiveSize; j++)
+                        if (IsFree(j, solution))
+                            solution.G[i] += solution.Alpha[j] * Q_i[j];
                 }
             }
             else
             {
-                for (i = 0; i < active_size; i++)
-                    if (is_free(i))
+                for (i = 0; i < solution.ActiveSize; i++)
+                    if (IsFree(i, solution))
                     {
-                        float[] Q_i = Q.get_Q(i, l);
-                        double alpha_i = alpha[i];
-                        for (j = active_size; j < l; j++)
-                            G[j] += alpha_i * Q_i[j];
+                        float[] Q_i = solution.Q.get_Q(i, solution.L);
+                        double alpha_i = solution.Alpha[i];
+                        for (j = solution.ActiveSize; j < solution.L; j++)
+                            solution.G[j] += alpha_i * Q_i[j];
                     }
             }
         }
@@ -301,122 +311,130 @@ namespace Baxter.Vector.Machine
             do { double tmp = G_bar[i]; G_bar[i] = G_bar[j]; G_bar[j] = tmp; } while (false);
         }
 
-        private bool be_shrunk(int i, double Gmax1, double Gmax2)
+        private bool be_shrunk(int i, Solution solution)
         {
             if (is_upper_bound(i))
             {
-                if (y[i] == +1)
-                    return (-G[i] > Gmax1);
+                if (solution.Y[i] == +1)
+                    return (-solution.G[i] > solution.Gmax1);
                 else
-                    return (-G[i] > Gmax2);
+                    return (-solution.G[i] > solution.Gmax2);
             }
             else if (is_lower_bound(i))
             {
-                if (y[i] == +1)
-                    return (G[i] > Gmax2);
+                if (solution.Y[i] == +1)
+                    return (solution.G[i] > solution.Gmax2);
                 else
-                    return (G[i] > Gmax1);
+                    return (solution.G[i] > solution.Gmax1);
             }
             else
                 return (false);
         }
 
-        private double calculate_rho()
+        private Solution CalculateRho(Solution solution)
         {
             double r;
-            int nr_free = 0;
-            double ub = INF, lb = -INF, sum_free = 0;
-            for (int i = 0; i < active_size; i++)
+            var nrFree = 0;
+            var ub = double.PositiveInfinity;
+            var lb = double.NegativeInfinity;
+            double sumFree = 0;
+
+            for (var i = 0; i < solution.ActiveSize; i++)
             {
-                double yG = y[i] * G[i];
+                var yG = solution.Y[i] * solution.G[i];
 
                 if (is_lower_bound(i))
                 {
-                    if (y[i] > 0)
+                    if (solution.Y[i] > 0)
                         ub = Math.Min(ub, yG);
                     else
                         lb = Math.Max(lb, yG);
                 }
                 else if (is_upper_bound(i))
                 {
-                    if (y[i] < 0)
+                    if (solution.Y[i] < 0)
                         ub = Math.Min(ub, yG);
                     else
                         lb = Math.Max(lb, yG);
                 }
                 else
                 {
-                    ++nr_free;
-                    sum_free += yG;
+                    ++nrFree;
+                    sumFree += yG;
                 }
             }
 
-            if (nr_free > 0)
-                r = sum_free / nr_free;
+            if (nrFree > 0)
+                r = sumFree / nrFree;
             else
                 r = (ub + lb) / 2;
 
-            return r;
+            solution.Rho = r;
+            return solution;
         }
 
-        private void do_shrinking()
+        private static Solution Shrink(Solution solution)
         {
             int i;
-            double Gmax1 = -INF;        // max { -y_i * grad(f)_i | i in I_up(\alpha) }
-            double Gmax2 = -INF;        // max { y_i * grad(f)_i | i in I_low(\alpha) }
+            solution.Gmax1 = double.NegativeInfinity;        // max { -y_i * grad(f)_i | i in I_up(\alpha) }
+            solution.Gmax2 = double.NegativeInfinity;        // max { y_i * grad(f)_i | i in I_low(\alpha) }
 
             // find maximal violating pair first
-            for (i = 0; i < active_size; i++)
+            for (i = 0; i < solution.ActiveSize; i++)
             {
-                if (y[i] == +1)
+                if (solution.Y[i] == +1)
                 {
                     if (!is_upper_bound(i))
                     {
-                        if (-G[i] >= Gmax1)
-                            Gmax1 = -G[i];
+                        if (-solution.G[i] >= solution.Gmax1)
+                            solution.Gmax1 = -solution.G[i];
                     }
                     if (!is_lower_bound(i))
                     {
-                        if (G[i] >= Gmax2)
-                            Gmax2 = G[i];
+                        if (solution.G[i] >= solution.Gmax2)
+                            solution.Gmax2 = solution.G[i];
                     }
                 }
                 else
                 {
                     if (!is_upper_bound(i))
                     {
-                        if (-G[i] >= Gmax2)
-                            Gmax2 = -G[i];
+                        if (-solution.G[i] >= solution.Gmax2)
+                            solution.Gmax2 = -solution.G[i];
                     }
                     if (!is_lower_bound(i))
                     {
-                        if (G[i] >= Gmax1)
-                            Gmax1 = G[i];
+                        if (solution.G[i] >= solution.Gmax1)
+                            solution.Gmax1 = solution.G[i];
                     }
                 }
             }
 
-            if (unshrink == false && Gmax1 + Gmax2 <= eps * 10)
+            if (solution.Unshrink == false && solution.Gmax1 + solution.Gmax2 <= solution.Eps * 10)
             {
-                unshrink = true;
+                solution.Unshrink = true;
                 reconstruct_gradient();
-                active_size = l;
+                solution.ActiveSize = solution.L;
             }
 
-            for (i = 0; i < active_size; i++)
-                if (be_shrunk(i, Gmax1, Gmax2))
+            for (i = 0; i < solution.ActiveSize; i++)
+            {
+                if (be_shrunk(i, solution.Gmax1, solution.Gmax2))
                 {
-                    active_size--;
-                    while (active_size > i)
+                    solution.ActiveSize--;
+                    while (solution.ActiveSize > i)
                     {
-                        if (!be_shrunk(active_size, Gmax1, Gmax2))
+                        if (!be_shrunk(solution.ActiveSize, solution.Gmax1, solution.Gmax2))
                         {
-                            swap_index(i, active_size);
+                            swap_index(i, solution.ActiveSize);
                             break;
                         }
-                        active_size--;
+                        solution.ActiveSize--;
                     }
                 }
+            }
+
+            return solution;
         }
 
         // XXX
@@ -426,7 +444,7 @@ namespace Baxter.Vector.Machine
         }
 
         // return 1 if already optimal, return 0 otherwise
-        private int select_working_set(out int[] working_set)
+        private static int SelectWorkingSet(Solution solution)
         {
             // return i,j such that
             // i: maximizes -y_i * grad(f)_i, i in I_up(\alpha)
@@ -439,23 +457,23 @@ namespace Baxter.Vector.Machine
             var Gmin_idx = -1;
             double obj_diff_min = double.PositiveInfinity;
 
-            for (int t = 0; t < active_size; t++)
+            for (int t = 0; t < solution.ActiveSize; t++)
             {
-                if (y[t] == +1)
+                if (solution.Y[t] == +1)
                 {
-                    if (!is_upper_bound(t))
-                        if (-G[t] >= Gmax)
+                    if (!IsUpperBound(t, solution))
+                        if (-solution.G[t] >= Gmax)
                         {
-                            Gmax = -G[t];
+                            Gmax = -solution.G[t];
                             Gmax_idx = t;
                         }
                 }
                 else
                 {
-                    if (!is_lower_bound(t))
-                        if (G[t] >= Gmax)
+                    if (!IsUpperBound(t, solution))
+                        if (solution.G[t] >= Gmax)
                         {
-                            Gmax = G[t];
+                            Gmax = solution.G[t];
                             Gmax_idx = t;
                         }
                 }
@@ -464,21 +482,21 @@ namespace Baxter.Vector.Machine
             int i = Gmax_idx;
             float[] Q_i = null;
             if (i != -1) // null Q_i not accessed: Gmax=-INF if i=-1
-                Q_i = Q.get_Q(i, active_size);
+                Q_i = solution.Q.get_Q(i, solution.ActiveSize);
 
-            for (int j = 0; j < active_size; j++)
+            for (int j = 0; j < solution.ActiveSize; j++)
             {
-                if (y[j] == +1)
+                if (solution.Y[j] == +1)
                 {
-                    if (!is_lower_bound(j))
+                    if (!IsUpperBound(j, solution))
                     {
-                        double grad_diff = Gmax + G[j];
-                        if (G[j] >= Gmax2)
-                            Gmax2 = G[j];
+                        double grad_diff = Gmax + solution.G[j];
+                        if (solution.G[j] >= Gmax2)
+                            Gmax2 = solution.G[j];
                         if (grad_diff > 0)
                         {
                             double obj_diff;
-                            double quad_coef = QD[i] + QD[j] - 2.0 * y[i] * Q_i[j];
+                            double quad_coef = solution.QD[i] + solution.QD[j] - 2.0 * solution.Y[i] * Q_i[j];
                             if (quad_coef > 0)
                                 obj_diff = -(grad_diff * grad_diff) / quad_coef;
                             else
@@ -494,15 +512,15 @@ namespace Baxter.Vector.Machine
                 }
                 else
                 {
-                    if (!is_upper_bound(j))
+                    if (!IsUpperBound(j, solution))
                     {
-                        double grad_diff = Gmax - G[j];
-                        if (-G[j] >= Gmax2)
-                            Gmax2 = -G[j];
+                        double grad_diff = Gmax - solution.G[j];
+                        if (-solution.G[j] >= Gmax2)
+                            Gmax2 = -solution.G[j];
                         if (grad_diff > 0)
                         {
                             double obj_diff;
-                            double quad_coef = QD[i] + QD[j] + 2.0 * y[i] * Q_i[j];
+                            double quad_coef = solution.QD[i] + solution.QD[j] + 2.0 * solution.Y[i] * Q_i[j];
                             if (quad_coef > 0)
                                 obj_diff = -(grad_diff * grad_diff) / quad_coef;
                             else

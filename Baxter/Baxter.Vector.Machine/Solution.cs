@@ -40,6 +40,26 @@ namespace Baxter.Vector.Machine
             WorkingSet = new int[2];
         }
 
+        public Solution(int l, QMatrix q, double[] p_, byte[] y_,
+            double[] alpha_, double cp, double cn, double eps, int shrinking)
+        {
+            L = l;
+            Q = q;
+            P = p_;
+            Y = y_;
+            Alpha = alpha_;
+            Cp = cp;
+            Eps = eps;
+
+            Shrinking = shrinking;
+            Initialize();
+
+            Iterator = 0;
+            MaxIterator = Math.Max(10000000, L > int.MaxValue / 100 ? int.MaxValue : 100 * L);
+            Counter = Math.Min(L, 1000) + 1;
+            WorkingSet = new int[2];
+        }
+
         public int[] ActiveSet { get; set; }
 
         public int ActiveSize { get; set; }
@@ -48,12 +68,7 @@ namespace Baxter.Vector.Machine
 
         public byte[] AlphaStatus { get; set; }
 
-        public double Rho { get; set; }
-
         public double Cn { get; set; }
-
-        public double Gmax1 { get; set; }
-        public double Gmax2 { get; set; }
 
         public int Counter { get; set; }
 
@@ -66,6 +81,14 @@ namespace Baxter.Vector.Machine
 
         public double[] GBar { get; set; }
 
+        public double Gmax1 { get; set; }
+
+        public double Gmax2 { get; set; }
+
+        public double Gmax3 { get; set; }
+
+        public double Gmax4 { get; set; }
+
         public double Infinite { get; set; } = double.PositiveInfinity;
 
         public int Iterator { get; set; } = 0;
@@ -73,18 +96,32 @@ namespace Baxter.Vector.Machine
         // gradient, if we treat free variables as 0
         public int L { get; set; }
 
-        public int MaxIterator { get; set; } //= Math.Max(10000000, l > Int32.MaxValue / 100 ? Int32.MaxValue : 100 * l);
+        public int MaxIterator { get; set; }
+
+        public double obj { get; set; }
 
         public double[] P { get; set; }
-
-        //public int[] WorkingSet { get; set; } = new int[2];
 
         // gradient of objective function LOWER_BOUND, UPPER_BOUND, FREE
         public QMatrix Q { get; set; }
 
+        //= Math.Max(10000000, l > Int32.MaxValue / 100 ? Int32.MaxValue : 100 * l);
+        //public int[] WorkingSet { get; set; } = new int[2];
         public double[] QD { get; set; }
 
+        public double r { get; set; }
+
+        public double Rho { get; set; }
+
+        public int Shrinking { get; set; }
+
         public bool Unshrink { get; set; }
+
+        public double upper_bound_n { get; set; }
+
+        public double upper_bound_p { get; set; }
+
+        public int WorkingSetStatus { get; set; }
 
         public byte[] Y { get; set; }
 

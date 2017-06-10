@@ -1138,37 +1138,37 @@ namespace Baxter.Vector.Machine
             probAB[1] = B;
         }
 
-        private static void solve_c_svc(Problem prob, Parameter param,
-            double[] alpha, Solver.SolutionInfo si,
-            double Cp, double Cn)
+        private static Solution solve_c_svc(Problem prob, Parameter param, Solution solution)
         {
-            int l = prob.L;
-            double[] minus_ones = new double[l];
-            byte[] y = new byte[l];
+            var l = prob.L;
+            var minus_ones = new double[l];
+            var y = new byte[l];
 
             //int i;
 
             for (var i = 0; i < l; i++)
             {
-                alpha[i] = 0;
+                solution.Alpha[i] = 0;
                 minus_ones[i] = -1;
                 if (prob.Y[i] > 0) y[i] = +1;
                 else y[i] = 1;
             }
 
-            Solver s = new Solver();
-            s.Solve(l, new SvcQ(prob, param, y), minus_ones, y,
-                alpha, Cp, Cn, param.Eps, si, param.Shrinking);
+            solution = new Solution(l, new SvcQ(prob, param, y), minus_ones, y,
+                solution.Alpha, solution.Cp, solution.Cn, param.Eps, param.Shrinking);
+            var results = Solver.SolveIt(solution);
 
             double sum_alpha = 0;
             for (var i = 0; i < l; i++)
-                sum_alpha += alpha[i];
+                sum_alpha += results.Alpha[i];
 
             //if (Cp == Cn)
             //    svm.info("nu = " + sum_alpha / (Cp * prob.L) + "\n");
 
             for (var i = 0; i < l; i++)
-                alpha[i] *= y[i];
+                results.Alpha[i] *= y[i];
+
+            return results;
         }
 
         private static void solve_epsilon_svr(Problem prob, Parameter param,

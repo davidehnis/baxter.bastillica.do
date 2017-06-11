@@ -1171,13 +1171,12 @@ namespace Baxter.Vector.Machine
             return results;
         }
 
-        private static void solve_epsilon_svr(Problem prob, Parameter param,
-            double[] alpha, Solver.SolutionInfo si)
+        private static Solution solve_epsilon_svr(Problem prob, Parameter param)
         {
-            int l = prob.L;
-            double[] alpha2 = new double[2 * l];
-            double[] linear_term = new double[2 * l];
-            byte[] y = new byte[2 * l];
+            var l = prob.L;
+            var alpha2 = new double[2 * l];
+            var linear_term = new double[2 * l];
+            var y = new byte[2 * l];
             int i;
 
             for (i = 0; i < l; i++)
@@ -1191,27 +1190,27 @@ namespace Baxter.Vector.Machine
                 y[i + l] = 1;
             }
 
-            Solver s = new Solver();
-            s.Solve(2 * l, new SvrQ(prob, param), linear_term, y,
-                alpha2, param.C, param.C, param.Eps, si, param.Shrinking);
+            var solution = new Solution(2 * l, new SvrQ(prob, param), linear_term, y,
+                alpha2, param.C, param.C, param.Eps, param.Shrinking);
+            solution = Solver.SolveIt(solution);
 
-            double sum_alpha = 0;
+            solution.AlphaSum = 0;
             for (i = 0; i < l; i++)
             {
-                alpha[i] = alpha2[i] - alpha2[i + l];
-                sum_alpha += Math.Abs(alpha[i]);
+                solution.Alpha[i] = alpha2[i] - alpha2[i + l];
+                solution.AlphaSum += Math.Abs(solution.Alpha[i]);
             }
-            //svm.info("nu = " + sum_alpha / (param.C * l) + "\n");
+
+            return solution;
         }
 
-        private static void solve_nu_svc(Problem prob, Parameter param,
-                                                    double[] alpha, Solver.SolutionInfo si)
+        private static Solution solve_nu_svc(Problem prob, Parameter param, double[] alpha)
         {
             int i;
-            int l = prob.L;
-            double nu = param.Nu;
+            var l = prob.L;
+            var nu = param.Nu;
 
-            byte[] y = new byte[l];
+            var y = new byte[l];
 
             for (i = 0; i < l; i++)
                 if (prob.Y[i] > 0)
@@ -1219,8 +1218,8 @@ namespace Baxter.Vector.Machine
                 else
                     y[i] = 1;
 
-            double sum_pos = nu * l / 2;
-            double sum_neg = nu * l / 2;
+            var sum_pos = nu * l / 2;
+            var sum_neg = nu * l / 2;
 
             for (i = 0; i < l; i++)
                 if (y[i] == +1)
@@ -1234,35 +1233,37 @@ namespace Baxter.Vector.Machine
                     sum_neg -= alpha[i];
                 }
 
-            double[] zeros = new double[l];
+            var zeros = new double[l];
 
             for (i = 0; i < l; i++)
                 zeros[i] = 0;
 
-            SolverNu s = new SolverNu();
-            s.SolveIt(l, new SvcQ(prob, param, y), zeros, y, alpha, 1.0, 1.0, param.Eps, si, param.Shrinking);
-            double r = si.r;
+            var solution = new Solution(l, new SvcQ(prob, param, y), zeros, y, alpha, 1.0, 1.0, param.Eps,
+                param.Shrinking);
+            solution = SolverNu.Solve(solution);
+            var r = solution.r;
 
             for (i = 0; i < l; i++)
-                alpha[i] *= y[i] / r;
+                solution.Alpha[i] *= y[i] / r;
 
-            si.rho /= r;
-            si.obj /= (r * r);
-            si.upper_bound_p = 1 / r;
-            si.upper_bound_n = 1 / r;
+            solution.Rho /= r;
+            solution.obj /= (r * r);
+            solution.upper_bound_p = 1 / r;
+            solution.upper_bound_n = 1 / r;
+
+            return solution;
         }
 
-        private static void solve_nu_svr(Problem prob, Parameter param,
-            double[] alpha, Solver.SolutionInfo si)
+        private static Solution solve_nu_svr(Problem prob, Parameter param)
         {
-            int l = prob.L;
-            double C = param.C;
-            double[] alpha2 = new double[2 * l];
-            double[] linear_term = new double[2 * l];
-            byte[] y = new byte[2 * l];
+            var l = prob.L;
+            var C = param.C;
+            var alpha2 = new double[2 * l];
+            var linear_term = new double[2 * l];
+            var y = new byte[2 * l];
             int i;
 
-            double sum = C * param.Nu * l / 2;
+            var sum = C * param.Nu * l / 2;
             for (i = 0; i < l; i++)
             {
                 alpha2[i] = alpha2[i + l] = Math.Min(sum, C);
@@ -1276,24 +1277,25 @@ namespace Baxter.Vector.Machine
             }
 
             var s = new SolverNu();
-            s.Solve(2 * l, new SvrQ(prob, param), linear_term, y,
-                alpha2, C, C, param.Eps, si, param.Shrinking);
-
-            //svm.info("epsilon = " + (-si.r) + "\n");
+            var solution = new Solution(2 * l, new SvrQ(prob, param), linear_term, y,
+                alpha2, C, C, param.Eps, param.Shrinking);
+            solution = SolverNu.Solve(solution);
 
             for (i = 0; i < l; i++)
-                alpha[i] = alpha2[i] - alpha2[i + l];
+                solution.Alpha[i] = alpha2[i] - alpha2[i + l];
+
+            return solution;
         }
 
-        private static void solve_one_class(Problem prob, Parameter param,
-            double[] alpha, Solver.SolutionInfo si)
+        private static Solution solve_one_class(Problem prob, Parameter param,
+            double[] alpha)
         {
-            int l = prob.L;
-            double[] zeros = new double[l];
-            byte[] ones = new byte[l];
+            var l = prob.L;
+            var zeros = new double[l];
+            var ones = new byte[l];
             int i;
 
-            int n = (int)(param.Nu * prob.L); // # of alpha's at upper bound
+            var n = (int)(param.Nu * prob.L); // # of alpha's at upper bound
 
             for (i = 0; i < n; i++)
                 alpha[i] = 1;
@@ -1308,9 +1310,11 @@ namespace Baxter.Vector.Machine
                 ones[i] = 1;
             }
 
-            Solver s = new Solver();
-            s.Solve(l, new OneClassQ(prob, param), zeros, ones,
-                alpha, 1.0, 1.0, param.Eps, si, param.Shrinking);
+            var solution = new Solution(l, new OneClassQ(prob, param), zeros, ones,
+                alpha, 1.0, 1.0, param.Eps, param.Shrinking);
+            solution = Solver.SolveIt(solution);
+
+            return solution;
         }
 
         // Cross-validation decision values for probability estimates
@@ -1318,9 +1322,9 @@ namespace Baxter.Vector.Machine
             double[] probAB)
         {
             int i;
-            int nr_fold = 5;
-            int[] perm = new int[prob.L];
-            double[] dec_values = new double[prob.L];
+            var nr_fold = 5;
+            var perm = new int[prob.L];
+            var dec_values = new double[prob.L];
             var rand = new Random();
 
             // random shuffle
@@ -1330,17 +1334,17 @@ namespace Baxter.Vector.Machine
                 int j = i + rand.Next(prob.L - i);
                 do
                 {
-                    int tmp = perm[i];
+                    var tmp = perm[i];
                     perm[i] = perm[j];
                     perm[j] = tmp;
                 } while (false);
             }
             for (i = 0; i < nr_fold; i++)
             {
-                int begin = i * prob.L / nr_fold;
-                int end = (i + 1) * prob.L / nr_fold;
+                var begin = i * prob.L / nr_fold;
+                var end = (i + 1) * prob.L / nr_fold;
                 int j, k;
-                Problem subprob = new Problem();
+                var subprob = new Problem();
 
                 subprob.L = prob.L - (end - begin);
                 subprob.X = new Node[subprob.L][];
@@ -1377,7 +1381,7 @@ namespace Baxter.Vector.Machine
                         dec_values[perm[j]] = -1;
                 else
                 {
-                    Parameter subparam = param;
+                    var subparam = param;
                     subparam.Probability = 0;
                     subparam.C = 1.0;
                     subparam.NrWeight = 2;
@@ -1387,7 +1391,7 @@ namespace Baxter.Vector.Machine
                     subparam.WeightLabel[1] = -1;
                     subparam.Weight[0] = Cp;
                     subparam.Weight[1] = Cn;
-                    Model submodel = Train(subprob, subparam);
+                    var submodel = Train(subprob, subparam);
                     for (j = begin; j < end; j++)
                     {
                         double[] dec_value = new double[1];
@@ -1518,50 +1522,46 @@ namespace Baxter.Vector.Machine
         private static decision_function svm_train_one(Problem prob, Parameter param,
             double Cp, double Cn)
         {
-            double[] alpha = new double[prob.L];
-            Solver.SolutionInfo si = new Solver.SolutionInfo();
+            var solution = new Solution();
+            solution.Alpha = new double[prob.L];
             switch (param.SvmType)
             {
-                case Vector.Machine.Parameter.Svc:
-                    solve_c_svc(prob, param, alpha, si, Cp, Cn);
+                case Parameter.Svc:
+                    solution = solve_c_svc(prob, param, solution);
                     break;
 
                 case Vector.Machine.Parameter.NuSvc:
-                    solve_nu_svc(prob, param, alpha, si);
+                    solution = solve_nu_svc(prob, param, solution.Alpha);
                     break;
 
                 case Vector.Machine.Parameter.OneClass:
-                    solve_one_class(prob, param, alpha, si);
+                    solution = solve_one_class(prob, param, solution.Alpha);
                     break;
 
                 case Vector.Machine.Parameter.Epsilon:
-                    solve_epsilon_svr(prob, param, alpha, si);
+                    solution = solve_epsilon_svr(prob, param);
                     break;
 
                 case Vector.Machine.Parameter.NuSvr:
-                    solve_nu_svr(prob, param, alpha, si);
+                    solution = solve_nu_svr(prob, param);
                     break;
             }
 
-            //svm.info("obj = " + si.obj + ", rho = " + si.rho + "\n");
-
-            // output SVs
-
-            int nSV = 0;
-            int nBSV = 0;
-            for (int i = 0; i < prob.L; i++)
+            var nSV = 0;
+            var nBSV = 0;
+            for (var i = 0; i < prob.L; i++)
             {
-                if (Math.Abs(alpha[i]) > 0)
+                if (Math.Abs(solution.Alpha[i]) > 0)
                 {
                     ++nSV;
                     if (prob.Y[i] > 0)
                     {
-                        if (Math.Abs(alpha[i]) >= si.upper_bound_p)
+                        if (Math.Abs(solution.Alpha[i]) >= solution.upper_bound_p)
                             ++nBSV;
                     }
                     else
                     {
-                        if (Math.Abs(alpha[i]) >= si.upper_bound_n)
+                        if (Math.Abs(solution.Alpha[i]) >= solution.upper_bound_n)
                             ++nBSV;
                     }
                 }
@@ -1570,8 +1570,9 @@ namespace Baxter.Vector.Machine
             //svm.info("nSV = " + nSV + ", nBSV = " + nBSV + "\n");
 
             decision_function f = new decision_function();
-            f.alpha = alpha;
-            f.rho = si.rho;
+            f.alpha = solution.Alpha;
+            f.rho = solution.Rho;
+
             return f;
         }
     }

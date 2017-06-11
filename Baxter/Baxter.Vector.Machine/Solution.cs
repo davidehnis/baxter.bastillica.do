@@ -68,6 +68,8 @@ namespace Baxter.Vector.Machine
 
         public byte[] AlphaStatus { get; set; }
 
+        public double AlphaSum { get; set; }
+
         public double Cn { get; set; }
 
         public int Counter { get; set; }
